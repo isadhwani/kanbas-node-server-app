@@ -7,7 +7,7 @@ function ModuleRoutes(app) {
     });
 
     app.get("/api/courses/:cid/modules", (req, res) => {
-        console.log("getting modules for course ", req.params.cid)
+        // console.log("getting modules for course ", req.params.cid)
         const { cid } = req.params;
         const modules = db.modules
             .filter((m) => m.course === cid);
@@ -26,6 +26,7 @@ function ModuleRoutes(app) {
     });
 
     app.delete("/api/modules/:mid", (req, res) => {
+        console.log("deleting module with id ", req.params.mid);
         const { mid } = req.params;
         db.modules = db.modules.filter((m) => m._id !== mid);
         res.sendStatus(200);
