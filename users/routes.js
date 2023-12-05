@@ -1,19 +1,20 @@
 import * as dao from "./dao.js";
-let currentUser = null;
+// let currentUser = null;
+
 function UserRoutes(app) {
 
     const createUser = async (req, res) => {
         console.log("createUser with user" + JSON.stringify(req.body))
         const user = await dao.createUser(req.body);
         res.json(user);
-      };
-      
-      const deleteUser = async (req, res) => {
+    };
+
+    const deleteUser = async (req, res) => {
         console.log("deleteUser with id " + req.params.userId)
         const status = await dao.deleteUser(req.params.userId);
         res.json(status);
     };
-  
+
     const findAllUsers = async (req, res) => {
         const users = await dao.findAllUsers();
         res.json(users);
@@ -22,43 +23,47 @@ function UserRoutes(app) {
     const findUserById = async (req, res) => {
         const user = await dao.findUserById(req.params.userId);
         res.json(user);
-      };
-    
+    };
+
     const updateUser = async (req, res) => {
         const { userId } = req.params;
         console.log("updateUser with user" + JSON.stringify(req.body) + " and id " + userId)
         const status = await dao.updateUser(userId, req.body);
-        currentUser = await dao.findUserById(userId);
+        const currentUser = await dao.findUserById(userId);
+        req.session['currentUser'] = currentUser;
         res.json(status);
     };
 
     const signup = async (req, res) => {
         console.log("signup with user" + JSON.stringify(req.body))
-        
+
         const user = await dao.findUserByUsername(req.body.username);
         if (user) {
-          res.status(400).json({ message: "Username already taken" });
+            res.status(400).json({ message: "Username already taken" });
         }
-        currentUser = await dao.createUser(req.body);
+        const currentUser = await dao.createUser(req.body);
+        req.session['currentUser'] = currentUser;
         res.json(currentUser);
-      };
-    
+    };
+
     const signin = async (req, res) => {
         const { username, password } = req.body;
-        currentUser = await dao.findUserByCredentials(username, password);
+        const currentUser = await dao.findUserByCredentials(username, password);
+        req.session['currentUser'] = currentUser;
         console.log("found user: ", currentUser)
         res.json(currentUser);
     };
 
     const account = async (req, res) => {
-        res.json(currentUser);
+        res.json(req.session['currentUser']);
     };
 
     const signout = (req, res) => {
-        currentUser = null;
+        req.session.destroy();
         res.json(200);
       };
     
+
     app.post("/api/users", createUser);
     app.get("/api/users", findAllUsers);
     app.get("/api/users/:userId", findUserById);
